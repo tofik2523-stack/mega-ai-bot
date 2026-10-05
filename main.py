@@ -16,11 +16,11 @@ from docx import Document
 # Logging
 logging.basicConfig(level=logging.INFO)
 
-# --- KONFIGURATSIYA (Sizning kalitlaringiz) ---
+# --- KONFIGURATSIYA ---
 BOT_TOKEN = "8986220465:AAFn2dhcavFcMR7jrpcr4K_Hjzx3dfgjUms"
-GEMINI_API_KEY = "AQ.Ab8RN6JKdvXIdQEtvk4L-Yy9gp6PjC-PEz-wdW_atPmGofTCPg"
+GEMINI_API_KEY = "AQ.Ab8RN6I166k-W-XKodHH74b1TOHcnFTw2GuJ3I_pyQ2O9iqdmw"
 
-# Gemini sozlanmasi
+# Gemini Sozlamasi (Rasmiy usul)
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
@@ -35,7 +35,7 @@ class Form(StatesGroup):
     waiting_quiz_topic = State()
     waiting_text_to_slide = State()
 
-# --- MENYULAR (UI/UX) ---
+# --- MENYULAR ---
 main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="🎓 Akademik va Ta'lim"), KeyboardButton(text="🎨 Media va AI Visual")],
@@ -103,7 +103,8 @@ async def pptx_process(message: types.Message, state: FSMContext):
     """
     
     try:
-        response = model.generate_content(prompt)
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(None, lambda: model.generate_content(prompt))
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         slides_data = json.loads(text_res)
         
@@ -146,7 +147,8 @@ async def docx_process(message: types.Message, state: FSMContext):
     prompt = f"Mavzu: '{topic}'. Ushbu mavzuda to'liq, akademik va batafsil Referat yozib ber. Reja, Kirish, Asosiy qism (2 ta bob) va Xulosa bo'lsin."
     
     try:
-        response = model.generate_content(prompt)
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(None, lambda: model.generate_content(prompt))
         doc = Document()
         doc.add_heading(topic.upper(), 0)
         doc.add_paragraph(response.text)
@@ -189,7 +191,8 @@ async def quiz_process(message: types.Message, state: FSMContext):
     """
     
     try:
-        response = model.generate_content(prompt)
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(None, lambda: model.generate_content(prompt))
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         quiz_data = json.loads(text_res)
         
@@ -222,7 +225,8 @@ async def text2pptx_process(message: types.Message, state: FSMContext):
     prompt = f"Ushbu matnni tahlil qilib, mantiqiy bo'lingan 3-5 ta slayd strukturasi (JSON) ko'rinishida ber:\n{user_text}\nJSON: [{{\"title\": \"...\", \"content\": [\"...\"]}}]"
     
     try:
-        response = model.generate_content(prompt)
+        loop = asyncio.get_running_loop()
+        response = await loop.run_in_executor(None, lambda: model.generate_content(prompt))
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         slides_data = json.loads(text_res)
         
