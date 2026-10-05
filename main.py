@@ -19,7 +19,7 @@ from docx import Document
 logging.basicConfig(level=logging.INFO)
 
 # --- KONFIGURATSIYA ---
-BOT_TOKEN = "8986220465:AAGSdxhczgr_a6WWRzh0aCp_g-CPzPB6N5g"
+BOT_TOKEN = "8986220465:AAGd1s1dhK60zXC8DCta27X7zBgozZaOje8"
 GEMINI_API_KEY = "AQ.Ab8RN6I166k-W-XKodHH74b1TOHcnFTw2GuJ3I_pyQ2O9iqdmw"
 
 # Gemini Sozlamasi
