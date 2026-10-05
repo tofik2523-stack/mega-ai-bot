@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8986220465:AAGd1s1dhK60zXC8DCta27X7zBgozZaOje8")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AQ.Ab8RN6I166k-W-XKodHH74b1TOHcnFTw2GuJ3I_pyQ2O9iqdmw")
 
-# Gemini sozlamasi
+# Eski ishonchli Google Generative AI sozlamasi
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
