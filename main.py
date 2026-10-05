@@ -11,7 +11,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
-import google.generativeai as genai
+from google import genai
 from pptx import Presentation
 from docx import Document
 
@@ -19,12 +19,11 @@ from docx import Document
 logging.basicConfig(level=logging.INFO)
 
 # --- KONFIGURATSIYA ---
-BOT_TOKEN = "8986220465:AAGd1s1dhK60zXC8DCta27X7zBgozZaOje8"
-GEMINI_API_KEY = "AQ.Ab8RN6I166k-W-XKodHH74b1TOHcnFTw2GuJ3I_pyQ2O9iqdmw"
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8986220465:AAGd1s1dhK60zXC8DCta27X7zBgozZaOje8")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AQ.Ab8RN6I166k-W-XKodHH74b1TOHcnFTw2GuJ3I_pyQ2O9iqdmw")
 
-# Gemini Sozlamasi
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Yangi rasmiy Google GenAI klienti
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 # Bot & Dispatcher
 bot = Bot(token=BOT_TOKEN)
@@ -120,7 +119,10 @@ async def pptx_process(message: types.Message, state: FSMContext):
     
     try:
         loop = asyncio.get_running_loop()
-        response = await loop.run_in_executor(None, lambda: model.generate_content(prompt))
+        response = await loop.run_in_executor(
+            None, 
+            lambda: client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+        )
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         slides_data = json.loads(text_res)
         
@@ -164,7 +166,10 @@ async def docx_process(message: types.Message, state: FSMContext):
     
     try:
         loop = asyncio.get_running_loop()
-        response = await loop.run_in_executor(None, lambda: model.generate_content(prompt))
+        response = await loop.run_in_executor(
+            None, 
+            lambda: client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+        )
         doc = Document()
         doc.add_heading(topic.upper(), 0)
         doc.add_paragraph(response.text)
@@ -208,7 +213,10 @@ async def quiz_process(message: types.Message, state: FSMContext):
     
     try:
         loop = asyncio.get_running_loop()
-        response = await loop.run_in_executor(None, lambda: model.generate_content(prompt))
+        response = await loop.run_in_executor(
+            None, 
+            lambda: client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+        )
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         quiz_data = json.loads(text_res)
         
@@ -242,7 +250,10 @@ async def text2pptx_process(message: types.Message, state: FSMContext):
     
     try:
         loop = asyncio.get_running_loop()
-        response = await loop.run_in_executor(None, lambda: model.generate_content(prompt))
+        response = await loop.run_in_executor(
+            None, 
+            lambda: client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+        )
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         slides_data = json.loads(text_res)
         
@@ -271,7 +282,6 @@ async def text2pptx_process(message: types.Message, state: FSMContext):
 
 # --- ISHGA TUSHIRISH ---
 async def main():
-    # Render port talabini qondirish uchun mini web-serverni fonda ochamiz
     threading.Thread(target=start_dummy_server, daemon=True).start()
     print("🚀 Mini web-server va Mega AI Bot ishga tushdi!")
     await dp.start_polling(bot, drop_pending_updates=True)
