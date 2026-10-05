@@ -11,7 +11,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMar
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
-from google import genai
+import google.generativeai as genai
 from pptx import Presentation
 from docx import Document
 
@@ -22,8 +22,9 @@ logging.basicConfig(level=logging.INFO)
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8986220465:AAGd1s1dhK60zXC8DCta27X7zBgozZaOje8")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AQ.Ab8RN6I166k-W-XKodHH74b1TOHcnFTw2GuJ3I_pyQ2O9iqdmw")
 
-# Yangi rasmiy Google GenAI klienti
-client = genai.Client(api_key=GEMINI_API_KEY)
+# Gemini sozlamasi
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # Bot & Dispatcher
 bot = Bot(token=BOT_TOKEN)
@@ -121,7 +122,7 @@ async def pptx_process(message: types.Message, state: FSMContext):
         loop = asyncio.get_running_loop()
         response = await loop.run_in_executor(
             None, 
-            lambda: client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+            lambda: model.generate_content(prompt)
         )
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         slides_data = json.loads(text_res)
@@ -162,13 +163,13 @@ async def docx_process(message: types.Message, state: FSMContext):
     topic = message.text
     msg = await message.answer("⏳ **AI referat matni va rejasini shakllantirmoqda...**")
     
-    prompt = f"Mavzu: '{topic}'. Ushbu mavzuda to'liq, akademik va batafsil Referat yozib ber. Reja, Kirish, Asosiy qism (2 ta bob) va Xulosa bo'lsin."
+    prompt = f"Mavzu: '{topic}'. Ushbu mavzuda to'liq, akademik va batafsil Referat yozib ber. Reja, Kirish, Asosiy qism va Xulosa bo'lsin."
     
     try:
         loop = asyncio.get_running_loop()
         response = await loop.run_in_executor(
             None, 
-            lambda: client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+            lambda: model.generate_content(prompt)
         )
         doc = Document()
         doc.add_heading(topic.upper(), 0)
@@ -215,7 +216,7 @@ async def quiz_process(message: types.Message, state: FSMContext):
         loop = asyncio.get_running_loop()
         response = await loop.run_in_executor(
             None, 
-            lambda: client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+            lambda: model.generate_content(prompt)
         )
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         quiz_data = json.loads(text_res)
@@ -252,7 +253,7 @@ async def text2pptx_process(message: types.Message, state: FSMContext):
         loop = asyncio.get_running_loop()
         response = await loop.run_in_executor(
             None, 
-            lambda: client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+            lambda: model.generate_content(prompt)
         )
         text_res = response.text.strip().replace("```json", "").replace("```", "")
         slides_data = json.loads(text_res)
