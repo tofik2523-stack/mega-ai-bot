@@ -256,7 +256,8 @@ async def text2pptx_process(message: types.Message, state: FSMContext):
 # --- ISHGA TUSHIRISH ---
 async def main():
     print("🚀 Mega AI Bot ishga tushdi!")
-    await dp.start_polling(bot)
+    # drop_pending_updates=True eski qotib qolgan so'rovlarni darhol tozalaydi
+    await dp.start_polling(bot, drop_pending_updates=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
