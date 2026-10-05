@@ -3,6 +3,8 @@ import io
 import json
 import asyncio
 import logging
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, BufferedInputFile
@@ -20,13 +22,27 @@ logging.basicConfig(level=logging.INFO)
 BOT_TOKEN = "8986220465:AAGSdxhczgr_a6WWRzh0aCp_g-CPzPB6N5g"
 GEMINI_API_KEY = "AQ.Ab8RN6I166k-W-XKodHH74b1TOHcnFTw2GuJ3I_pyQ2O9iqdmw"
 
-# Gemini Sozlamasi (Rasmiy usul)
+# Gemini Sozlamasi
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # Bot & Dispatcher
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
+
+# --- RENDER PORT UCHUN KICHIK WEB SERVER ---
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Mega AI Bot is active!")
+    def log_message(self, format, *args):
+        pass
+
+def start_dummy_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    server.serve_forever()
 
 # FSM (Holatlar)
 class Form(StatesGroup):
@@ -255,8 +271,9 @@ async def text2pptx_process(message: types.Message, state: FSMContext):
 
 # --- ISHGA TUSHIRISH ---
 async def main():
-    print("🚀 Mega AI Bot ishga tushdi!")
-    # drop_pending_updates=True eski qotib qolgan so'rovlarni darhol tozalaydi
+    # Render port talabini qondirish uchun mini web-serverni fonda ochamiz
+    threading.Thread(target=start_dummy_server, daemon=True).start()
+    print("🚀 Mini web-server va Mega AI Bot ishga tushdi!")
     await dp.start_polling(bot, drop_pending_updates=True)
 
 if __name__ == "__main__":
